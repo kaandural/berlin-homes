@@ -1,0 +1,154 @@
+
+<h2 class="sr-only">Financing calculator for 60–80k Eigenkapital, Birnenblütenweg 30, Berlin 319.000 €</h2>
+
+<style>
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+.sc { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 0.85rem 1rem; cursor: pointer; transition: border-color 0.15s; }
+.sc.active { border: 2px solid #185FA5; background: var(--color-background-info); }
+.sc .sc-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.sc.active .sc-label { color: var(--color-text-info); }
+.sc .sc-val { font-size: 16px; font-weight: 500; }
+.sc.active .sc-val { color: var(--color-text-info); }
+.sc .sc-note { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+.sc.active .sc-note { color: var(--color-text-info); }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 14px; }
+.row:last-child { border-bottom: none; }
+.row .r { font-weight: 500; }
+.highlight { background: var(--color-background-info); border-radius: var(--border-radius-md); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.highlight span { font-size: 14px; color: var(--color-text-info); }
+.highlight strong { font-size: 18px; font-weight: 500; color: var(--color-text-info); }
+.warn-box { background: var(--color-background-warning); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: var(--color-text-warning); margin-top: 10px; line-height: 1.5; }
+.ok-box { background: var(--color-background-success); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: var(--color-text-success); margin-top: 10px; line-height: 1.5; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0.75rem 0; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem; text-align: center; }
+.metric .label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+.metric .val { font-size: 15px; font-weight: 500; }
+.sec { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin: 1.25rem 0 0.5rem; }
+.slider-wrap { display: flex; align-items: center; gap: 10px; margin: 0.6rem 0; }
+.slider-wrap label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; min-width: 100px; }
+.slider-wrap .out { font-size: 14px; font-weight: 500; min-width: 52px; text-align: right; }
+</style>
+
+<div style="padding:1rem 0">
+
+  <div class="sec">Wähle dein Szenario</div>
+  <div class="scenario-grid">
+    <div class="sc" id="sc0" onclick="setSc(0)">
+      <div class="sc-label">Minimum</div>
+      <div class="sc-val">60.000 €</div>
+      <div class="sc-note">~19% Eigenkapital</div>
+    </div>
+    <div class="sc active" id="sc1" onclick="setSc(1)">
+      <div class="sc-label">Mitte</div>
+      <div class="sc-val">70.000 €</div>
+      <div class="sc-note">~22% Eigenkapital</div>
+    </div>
+    <div class="sc" id="sc2" onclick="setSc(2)">
+      <div class="sc-label">Maximum</div>
+      <div class="sc-val">80.000 €</div>
+      <div class="sc-note">~25% Eigenkapital</div>
+    </div>
+  </div>
+
+  <div class="sec">Wie wird das Eigenkapital aufgeteilt?</div>
+  <div class="card">
+    <div class="row"><span>Gesamtes Eigenkapital</span><span class="r" id="r-eq-total">70.000 €</span></div>
+    <div class="row"><span>– Nebenkosten (Pflicht)</span><span class="r" style="color:#BA7517">– 36.908 €</span></div>
+    <div class="row" style="font-weight:500"><span>= Verbleibend als Anzahlung</span><span class="r" id="r-dp-remaining">33.092 €</span></div>
+    <div class="row"><span>Anzahlung in % des Kaufpreises</span><span class="r" id="r-dp-pct">10,4%</span></div>
+    <div id="warn-reno" class="warn-box">⚠ Nach Nebenkosten und Anzahlung bleibt kein Puffer für Renovation (~30.000 € nötig). Plant diese separat per KfW-Kredit oder persönlichem Kredit.</div>
+  </div>
+
+  <div class="sec">Darlehen</div>
+  <div class="slider-wrap">
+    <label>Zinssatz (p.a.)</label>
+    <input type="range" id="rate" min="2.5" max="5.5" value="3.8" step="0.1" style="flex:1">
+    <span class="out" id="rate-out">3,8%</span>
+  </div>
+  <div class="slider-wrap">
+    <label>Laufzeit</label>
+    <input type="range" id="term" min="10" max="35" value="25" step="1" style="flex:1">
+    <span class="out" id="term-out">25 Jahre</span>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="label">Darlehensbetrag</div><div class="val" id="m-loan">—</div></div>
+    <div class="metric"><div class="label">Monatliche Rate</div><div class="val" id="m-monthly">—</div></div>
+    <div class="metric"><div class="label">Gesamtzinsen</div><div class="val" id="m-int">—</div></div>
+    <div class="metric"><div class="label">Gesamtrückzahlung</div><div class="val" id="m-totalrep" style="font-size:13px">—</div></div>
+  </div>
+
+  <div class="highlight">
+    <span>Monatliche Annuität</span>
+    <strong id="hl-monthly">—</strong>
+  </div>
+
+  <div id="rate-note" class="warn-box" style="margin-top:10px"></div>
+
+  <p style="font-size:12px;color:var(--color-text-secondary);margin-top:1rem;line-height:1.6">Aktuelle Berliner Hypothekenzinsen ca. 3,5–4,2% (Mai 2026). Bei unter 20% Anzahlung (bezogen auf den Kaufpreis) verlangen viele Banken einen Zinsaufschlag von 0,2–0,5%. KfW-Förderkredite (z.B. KfW 297 für Heizung) können die Renovierungskosten günstig finanzieren.</p>
+</div>
+
+<script>
+const PRICE = 319000, COSTS = 36908;
+const SCENARIOS = [60000, 70000, 80000];
+let activeSc = 1;
+
+function fmt(n) { return Math.round(n).toLocaleString('de-DE') + ' €'; }
+
+function setSc(i) {
+  activeSc = i;
+  [0,1,2].forEach(j => {
+    document.getElementById('sc'+j).classList.toggle('active', j===i);
+  });
+  calc();
+}
+
+function calc() {
+  const eq = SCENARIOS[activeSc];
+  const rate = +document.getElementById('rate').value;
+  const term = +document.getElementById('term').value;
+
+  document.getElementById('rate-out').textContent = rate.toFixed(1).replace('.',',') + '%';
+  document.getElementById('term-out').textContent = term + ' Jahre';
+
+  const dp = Math.max(0, eq - COSTS);
+  const loan = PRICE - dp;
+  const dpPct = (dp / PRICE * 100).toFixed(1);
+
+  document.getElementById('r-eq-total').textContent = fmt(eq);
+  document.getElementById('r-dp-remaining').textContent = fmt(dp);
+  document.getElementById('r-dp-pct').textContent = dpPct.replace('.',',') + '%';
+
+  const warnReno = document.getElementById('warn-reno');
+  if (eq >= 70000) {
+    warnReno.textContent = '⚠ Nach Nebenkosten und Anzahlung bleibt kein Puffer für Renovation (~30.000 € nötig). Plant diese separat per KfW-Kredit oder persönlichem Kredit.';
+    warnReno.style.display = 'block';
+  } else {
+    warnReno.style.display = 'block';
+    warnReno.textContent = '⚠ Sehr knapp: Nur ' + fmt(dp) + ' Anzahlung nach Nebenkosten. Banken könnten Aufschlag verlangen. Kein Renovierungspuffer.';
+  }
+
+  const r = rate / 100 / 12, n = term * 12;
+  const monthly = loan * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  const totalRep = monthly * n;
+
+  document.getElementById('m-loan').textContent = fmt(loan);
+  document.getElementById('m-monthly').textContent = fmt(monthly);
+  document.getElementById('m-int').textContent = fmt(totalRep - loan);
+  document.getElementById('m-totalrep').textContent = fmt(totalRep);
+  document.getElementById('hl-monthly').textContent = fmt(monthly) + ' / Monat';
+
+  const noteEl = document.getElementById('rate-note');
+  if (dp / PRICE < 0.20) {
+    noteEl.textContent = '⚠ Eure Anzahlung liegt unter 20% des Kaufpreises. Die meisten Banken verlangen in diesem Fall einen Zinsaufschlag – rechnet mit 0,2–0,5% höherem Zinssatz als angezeigt.';
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+}
+
+document.getElementById('rate').addEventListener('input', calc);
+document.getElementById('term').addEventListener('input', calc);
+calc();
+</script>
